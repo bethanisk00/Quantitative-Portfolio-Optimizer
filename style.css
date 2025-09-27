@@ -1,0 +1,145 @@
+/* In assets/style.css */
+
+/* --- Import Google Font --- */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+/* --- Global Styles & Variables --- */
+:root {
+    --primary-color: #4a47a3; /* A deep, professional purple */
+    --secondary-color: #706fd3;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --background-color: #f4f7f9;
+    --card-background: #ffffff;
+    --text-color: #343a40;
+    --light-text-color: #6c757d;
+    --border-color: #dee2e6;
+    --box-shadow: 0 4px 8px 0 rgba(0,0,0,0.08);
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 30px;
+}
+
+h1 {
+    color: var(--primary-color);
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 40px;
+}
+
+h3 {
+    color: var(--text-color);
+    font-weight: 600;
+    margin-top: 0;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+h4 {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+
+/* --- Layout Containers --- */
+.app-container {
+    display: flex;
+    flex-direction: row;
+    gap: 40px;
+}
+
+.left-column, .right-column {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+.left-column { width: 35%; }
+.right-column { width: 65%; }
+
+/* --- Card Styling --- */
+.card {
+    background-color: var(--card-background);
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: var(--box-shadow);
+    transition: box-shadow 0.3s ease-in-out;
+}
+.card:hover {
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.1);
+}
+
+/* --- Input Elements Styling --- */
+.input-label {
+    font-weight: 500;
+    margin-bottom: 8px;
+    display: block;
+    color: var(--light-text-color);
+}
+
+.input-row {
+    display: flex;
+    gap: 10px;
+    align-items: stretch; /* Make items same height */
+    margin-bottom: 15px;
+}
+.input-row .dash-input, .input-row .Select-control {
+    flex-grow: 1;
+}
+
+/* Base button style */
+.button {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+}
+.button:hover { transform: translateY(-1px); }
+
+#add-stock-button {
+    background-color: var(--primary-color);
+    color: white;
+}
+#add-stock-button:hover { background-color: var(--secondary-color); }
+
+#submit-button {
+    background-color: var(--success-color);
+    color: white;
+    padding: 14px;
+    font-size: 1.1em;
+    width: 100%;
+    margin-top: 20px;
+}
+#submit-button:hover { background-color: #218838; }
+
+
+/* --- Portfolio List & Pie Chart Styling --- */
+.portfolio-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #e9ecef;
+    padding: 8px 12px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+}
+
+.pie-chart-container {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
+
+/* --- Output Tables Styling --- */
+.dash-table-container .dash-header {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 600;
+}

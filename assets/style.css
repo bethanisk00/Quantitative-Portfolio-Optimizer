@@ -1,0 +1,182 @@
+/* In assets/style.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+:root {
+    --primary-color: #4a47a3;
+    --secondary-color: #706fd3;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --background-color: #f4f7f9;
+    --card-background: #ffffff;
+    --text-color: #343a40;
+    --light-text-color: #6c757d;
+    --border-color: #dee2e6;
+    --box-shadow: 0 4px 8px 0 rgba(0,0,0,0.08);
+}
+
+/* --- Universal Box Sizing --- */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 30px;
+}
+
+h1 { color: var(--primary-color); text-align: center; font-weight: 600; margin-bottom: 40px; }
+h3 { color: var(--text-color); font-weight: 600; margin-top: 0; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; }
+h4 { color: var(--primary-color); font-weight: 600; }
+
+/* --- ROBUST FLEXBOX LAYOUT --- */
+.app-container {
+    display: flex;
+    flex-wrap: wrap; /* Allows columns to wrap on very small screens */
+    gap: 40px;
+}
+.left-column {
+    flex: 1; /* Allows column to grow */
+    min-width: 350px; /* Prevents column from getting too squished */
+}
+.right-column {
+    flex: 2; /* Makes this column grow twice as fast as the left one */
+    min-width: 400px;
+}
+
+.card {
+    background-color: var(--card-background);
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: var(--box-shadow);
+    transition: box-shadow 0.3s ease-in-out;
+}
+.card:hover { box-shadow: 0 8px 16px 0 rgba(0,0,0,0.1); }
+
+.input-label { font-weight: 500; margin-bottom: 8px; display: block; color: var(--light-text-color); }
+.input-row { display: flex; gap: 10px; align-items: stretch; margin-bottom: 15px; }
+.input-row .dash-input { flex-grow: 1; }
+
+.button {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+}
+.button:hover { transform: translateY(-1px); }
+
+#add-stock-button { background-color: var(--primary-color); color: white; }
+#add-stock-button:hover { background-color: var(--secondary-color); }
+
+#submit-button {
+    background-color: var(--success-color);
+    color: white;
+    padding: 14px;
+    font-size: 1.1em;
+    width: 100%;
+    margin-top: 20px;
+}
+#submit-button:hover { background-color: #218838; }
+
+.portfolio-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #e9ecef;
+    padding: 8px 12px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+}
+
+.pie-chart-container { display: flex; flex-direction: row; gap: 20px; }
+
+/* We will style the headers in Python, but this can stay as a fallback */
+.dash-table-container .dash-header {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 600;
+}
+/* In assets/style.css */
+/* Add this new block to the end of the file */
+
+/* --- Dropdown Menu Styling Fix --- */
+
+/* Target the container for the dropdown options list */
+.Select-menu-outer {
+    /* Give the dropdown list a minimum width so it doesn't get squished */
+    min-width: 350px !important; 
+    /* Allow the list to grow if the content is very long */
+    width: auto !important; 
+}
+
+/* Target each individual option within the dropdown menu */
+.Select-option {
+    /* Add horizontal padding to give the text space */
+    padding: 8px 15px !important; 
+    /* Prevent long text from wrapping to the next line */
+    white-space: nowrap !important;
+    /* Ensure the text doesn't overflow its container */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Adds '...' if the text is still too long */
+}
+/* In assets/style.css */
+/* Add this new block to the end of the file */
+
+/* --- KPI Card Styling --- */
+.kpi-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.kpi-card {
+    flex: 1;
+    min-width: 150px;
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    border-left: 5px solid var(--primary-color);
+}
+
+.kpi-title {
+    font-size: 0.9em;
+    font-weight: 500;
+    color: var(--light-text-color);
+    margin: 0 0 10px 0;
+}
+
+.kpi-value {
+    font-size: 1.8em;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin: 0;
+}
+
+/* --- Risk Profile Styling --- */
+.risk-profile-container {
+    text-align: center;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    color: white; /* Make text white by default */
+}
+
+.risk-profile-title {
+    font-weight: 500;
+    margin: 0 0 10px 0;
+    color: rgba(255, 255, 255, 0.8); /* Slightly transparent white */
+}
+
+.risk-profile-text {
+    font-size: 1.5em;
+    font-weight: 600;
+    margin: 0;
+}
