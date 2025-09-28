@@ -2,7 +2,7 @@
 
 ## Live Demo
 
-**[Click here to access the live application](https://bethanisk.pythonanywhere.com/)**
+**[Click here to access the live application](https://quantitative-portfolio-optimizer.onrender.com/)
 
 *(Note: The app is hosted on a free/hobbyist tier. The initial load may take up to 60 seconds as the server wakes up. Please be patient!)*
 
