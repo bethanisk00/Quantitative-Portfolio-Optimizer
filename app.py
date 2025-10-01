@@ -11,12 +11,16 @@ from datetime import date, timedelta
 from data_feeder import get_stock_data
 from risk_calculator import calculate_portfolio_returns, calculate_historical_var_es
 from portfolio_optimizer import get_final_allocation, calculate_portfolio_performance
-from ticker_fetcher import get_sp500_tickers
+from ticker_fetcher import fetch_sp500_df # Corrected import
 from stock_screener import find_uncorrelated_stocks
 from data_cacher import get_sp500_price_data
 
 # --- Load Data on App Startup ---
-sp500_options, sp500_lookup_df = get_sp500_tickers()
+print("Loading master ticker list...")
+sp500_df = fetch_sp500_df()
+sp500_options = [{'label': f"{row['Symbol']} - {row['Security']}", 'value': row['Symbol']} for index, row in sp500_df.iterrows()]
+sp500_lookup_df = sp500_df.rename(columns={'Symbol': 'Ticker', 'Security': 'Company Name'})
+print(f"Successfully loaded {len(sp500_options)} tickers.")
 
 # --- App Initialization ---
 app = dash.Dash(__name__, external_stylesheets=['style.css'])
@@ -86,9 +90,6 @@ def add_stock_to_list(n_clicks, n_submit, ticker, shares, current_children):
     return (current_children or []) + [new_item]
 
 # --- Callback for STAGE 1: Analyze Current Portfolio & Suggest Hedges ---
-# In app.py
-# Replace the existing analyze_current_portfolio function with this one.
-
 @app.callback(
     Output('results-output', 'children'),
     Output('optimization-card', 'style'),
@@ -114,7 +115,6 @@ def analyze_current_portfolio(n_clicks, portfolio_items):
         price_data = get_stock_data(tickers, START_DATE, END_DATE)
         if price_data.empty: return html.Div("Error fetching price data."), {'display': 'none'}, [], [], {}
 
-        # --- (KPI calculation logic is correct and remains the same) ---
         latest_prices = price_data.iloc[-1]
         current_shares = pd.Series(holdings, index=tickers)
         current_dollar_values = current_shares * latest_prices
@@ -131,50 +131,25 @@ def analyze_current_portfolio(n_clicks, portfolio_items):
         elif 0.15 <= current_ann_volatility < 0.25: risk_level, risk_color = "Moderate Risk", "#fd7e14"
         else: risk_level, risk_color = "High Risk", "#dc3545"
             
-        # --- THIS IS THE DEFINITIVE FIX FOR THE HEDGING TABLE ---
         hedging_suggestions = find_uncorrelated_stocks(current_returns_ts)
         
-        # 1. Check if the suggestions DataFrame is empty. If so, create an empty table.
         if hedging_suggestions.empty:
             hedging_table = html.P("Could not find any uncorrelated stocks based on the available data.")
             suggested_options = []
-            final_hedging_df = pd.DataFrame() # Create an empty df for the checklist logic
         else:
-            # 2. If not empty, proceed with the full calculation and table creation.
-            suggested_tickers = hedging_suggestions.index.tolist()
-            sp500_prices = get_sp500_price_data() # Load the price cache
-
-            if not sp500_prices.empty and suggested_tickers:
-                # Filter the cached data for only the tickers we need
-                # Use .copy() to prevent SettingWithCopyWarning
-                suggested_prices = sp500_prices.reindex(columns=suggested_tickers).last('365D').copy()
-                
-                if len(suggested_prices) > 1:
-                    returns_12m = (suggested_prices.iloc[-1] - suggested_prices.iloc[0]) / suggested_prices.iloc[0]
-                    returns_12m.name = '12m Return'
-                    hedging_suggestions = pd.merge(hedging_suggestions, returns_12m, left_index=True, right_index=True, how='left')
-
             hedging_df = hedging_suggestions.reset_index().rename(columns={'index': 'Ticker'})
             merged_df = pd.merge(hedging_df, sp500_lookup_df, on='Ticker', how='left')
-            
             if '12m Return' not in merged_df.columns: merged_df['12m Return'] = np.nan
-            merged_df['12m Return'].fillna(0, inplace=True)
-            
+            merged_df.fillna({'12m Return': 0, 'Company Name': 'N/A'}, inplace=True)
             final_hedging_df = merged_df[['Ticker', 'Company Name', 'Correlation', '12m Return']]
             
             hedging_table = dash_table.DataTable(
-                columns=[
-                    {"name": "Ticker", "id": "Ticker"},
-                    {"name": "Company Name", "id": "Company Name"},
-                    {"name": "Correlation", "id": "Correlation", "type": "numeric", "format": dash_table.Format.Format(precision=3, scheme='f')},
-                    {"name": "12m Return", "id": "12m Return", "type": "numeric", "format": dash_table.FormatTemplate.percentage(2)}
-                ],
+                columns=[{"name": "Ticker", "id": "Ticker"}, {"name": "Company Name", "id": "Company Name"}, {"name": "Correlation", "id": "Correlation", "type": "numeric", "format": dash_table.Format.Format(precision=3, scheme='f')}, {"name": "12m Return", "id": "12m Return", "type": "numeric", "format": dash_table.FormatTemplate.percentage(2)}],
                 data=final_hedging_df.to_dict('records'),
                 style_cell={'textAlign': 'left', 'padding': '5px'},
                 style_header={'backgroundColor': 'var(--primary-color)', 'color': 'white', 'fontWeight': 'bold'}
             )
-            suggested_options = [{'label': f"{row['Ticker']} (Corr: {row['Correlation']:.2f}, Ret: {row['12m Return']:.1%})", 'value': row['Ticker']} for index, row in final_hedging_df.iterrows()]
-        # --- END OF FIX ---
+            suggested_options = [{'label': f"{row['Ticker']} ({row['Company Name']}) - Corr: {row['Correlation']:.2f}", 'value': row['Ticker']} for index, row in final_hedging_df.iterrows()]
         
         intermediate_data = {'holdings': holdings, 'original_tickers': tickers, 'original_total_value': current_total_value}
         
@@ -198,15 +173,12 @@ def analyze_current_portfolio(n_clicks, portfolio_items):
     except Exception as e:
         import traceback
         return html.Div([html.H4("An error occurred during analysis:"), html.Pre(f"{e}\n\n{traceback.format_exc()}")]), {'display': 'none'}, [], [], {}
+
 # --- Callback for STAGE 2: Run Final Optimization ---
 @app.callback(
     Output('results-output', 'children', allow_duplicate=True),
     Input('optimize-button', 'n_clicks'),
-    State('candidate-checklist', 'value'),
-    State('budget-input', 'value'),
-    State('risk-profile-dropdown', 'value'),
-    State('sell-enabled-dropdown', 'value'),
-    State('intermediate-data-store', 'data'),
+    [State('candidate-checklist', 'value'), State('budget-input', 'value'), State('risk-profile-dropdown', 'value'), State('sell-enabled-dropdown', 'value'), State('intermediate-data-store', 'data')],
     prevent_initial_call=True
 )
 def run_final_optimization(n_clicks, candidate_tickers, budget, risk_profile, sell_enabled_str, intermediate_data):
@@ -224,6 +196,8 @@ def run_final_optimization(n_clicks, candidate_tickers, budget, risk_profile, se
         RISK_FREE_RATE = 0.02
         
         original_price_data = get_stock_data(original_tickers, START_DATE, END_DATE)
+        if original_price_data.empty and original_tickers:
+            return html.Div("Error: Could not fetch data for original portfolio.")
         original_latest_prices = original_price_data.iloc[-1]
         original_shares = pd.Series({t: holdings.get(t, 0) for t in original_tickers}, index=original_tickers)
         original_dollar_values = original_shares * original_latest_prices
@@ -275,9 +249,7 @@ def run_final_optimization(n_clicks, candidate_tickers, budget, risk_profile, se
         allocation_table = dash_table.DataTable(
             columns=[{"name": "Ticker", "id": "Ticker"}, {"name": "Target Value ($)", "id": "Target Value ($)", "type": "numeric", "format": dash_table.Format.Format(precision=2, scheme='f', symbol='$')}, {"name": "Allocation", "id": "Allocation", "type": "numeric", "format": dash_table.FormatTemplate.percentage(2)}],
             data=allocation_df.to_dict('records'),
-            # --- THIS IS THE FIX ---
             style_cell={'textAlign': 'left', 'padding': '5px'},
-            # --- END OF FIX ---
             style_header={'backgroundColor': '#4a47a3', 'color': 'white', 'fontWeight': 'bold'}
         )
 
